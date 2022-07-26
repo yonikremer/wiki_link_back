@@ -1,62 +1,89 @@
 from typing import Generator, Callable, Optional, List
 import re
 from urllib.request import urlopen
-from multiprocessing.pool import ThreadPool as Pool
+from urllib.error import URLError, HTTPError, ContentTooShortError
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from multiprocessing.pool import ThreadPool
 from os import cpu_count
 
 
-def is_wiki_page(url: str) -> bool:
-    """Returns true if url is a url to a wikipedia page"""
+def is_wiki_page(url: str, language: str) -> bool:
+    """Returns true if url is a url to an existing wikipedia page and false otherwise."""
     if not isinstance(url, str): 
         return False
-    return ".wikipedia.org/wiki/" in url and url.startswith("https://")
+    is_secure = url.startswith("https://")
+    is_wiki_articale = ".wikipedia.org/wiki/" in url
+    if not (is_secure and is_wiki_articale): return False
+    if "File:" in url: return False
+    # try:
+    #     website_is_up = urlopen(url).getcode() == 200
+    # except (URLError, HTTPError, ContentTooShortError, ValueError):
+    #     website_is_up = False
+    # return website_is_up
+    return True
 
 
 def get_has_link_func(url_to: str) -> Callable[[str], Optional[str]]:
     """Given a target url, returns a function that checks if a url has a link to the target url"""
     def has_link(url_from: str) -> Optional[str]:
         """Returns true if url is a link from url_from to url_to and false otherwise"""
-        if not is_wiki_page(url_from) or not is_wiki_page(url_to):
-            return None
         from_page_html_str: str = urlopen(url_from).read().decode("utf-8")
         link_to_page: str = url_to[url_to.find("/wiki/"):]
-        if link_to_page in from_page_html_str: 
-            return url_from
+        if link_to_page in from_page_html_str: return url_from
         return None
     return has_link
 
 
-def wiki_link_back_gen(input_url: str, num_proccess: int = cpu_count()) -> Generator[str, None, None]:
+def link_list_to_url_list(links_list: List[str], language: str) -> Generator[str, None, None]: 
+    """Modifies the internal links to valid urls and removes non valid urls"""
+    for i in range(len(links_list)):
+        if links_list[i].startswith("/wiki/"):
+            links_list[i] = "https://en.wikipedia.org" + links_list[i]
+    return (url for url in links_list if is_wiki_page(url, language))
+
+
+def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> Generator[str, None, None]:
     """
     A generator function that gets a url to a wikipedia page and returns all urls to other wikipedia pages 
     that have a link back to the original page.
-    num_proccess is the number of processes to use in the thread pool.
+    num_workers is the number of processes to use in the thread pool.
     """
     html_string_page: str = urlopen(input_url).read().decode("utf-8")
-    url_list: List[str] = re.findall("href=[\"\'](.*?)[\"\']", html_string_page)
-    pool = Pool(processes=num_proccess)
+    link_list: List[str] = re.findall("href=[\"\'](.*?)[\"\']", html_string_page)
+    index_start_language = input_url.index("//") + 2
+    index_stop_language = input_url.index(".")
+    language: str = input_url[index_start_language:index_stop_language]
+    url_gen: Generator[str, None, None] = link_list_to_url_list(link_list, language)
     has_link_to_input: Callable[[str], Optional[str]] = get_has_link_func(input_url)
-    for linked_page_url in pool.imap_unordered(has_link_to_input, url_list):
-        if linked_page_url is not None:
-            yield linked_page_url
-    
+
+    with ThreadPoolExecutor(max_workers=num_workers) as executor:
+        future_to_url = {executor.submit(has_link_to_input, url): url for url in url_gen}
+        for future in as_completed(future_to_url):
+            curr_url = future_to_url[future]
+            is_linked = future.result() is not None
+            if is_linked:
+                yield curr_url
 
 
 def main():
-    # print("A valid url is a string that starts with 'https://' and contains '.wikipedia.org/wiki/'")
-    # input_url = input("Enter a url to a wikipedia page")
-    # while not is_wiki_page(input_url):
-    #     print("The url must be to a wikipedia page according to the requirements above.")
-    #     input_url = input("Enter a url to a wikipedia page")
-    print("The number of procceses must be a literal positive int")
-    input_message = f"Enter the number of procceses, it's recommended to use the number of cpu's which is {cpu_count()}"
-    num_procceses_str = input(input_message)
-    num_procceses = int(num_procceses_str)
-    while not (num_procceses_str.isnumeric() and num_procceses > 0):
-        num_procceses_str = input(f"{num_procceses_str} is not a valid literal int, please enter a valid literal int")
-        num_procceses = int(num_procceses_str)
-    input_url = "https://en.wikipedia.org/wiki/Israel"
-    wikipedia_urls = wiki_link_back_gen(input_url, num_procceses)
+    print("A valid url is a string that starts with 'https://' and contains '.wikipedia.org/wiki/'")
+    input_url = input("Enter a url to a wikipedia page")
+    while not is_wiki_page(input_url):
+        print("The url must be to a wikipedia page according to the requirements above.")
+        input_url = input("Enter a url to a wikipedia page")
+    # input_url = "https://en.wikipedia.org/wiki/Israel"
+
+    print("The number of workers must be a literal positive int")
+    recomended_num_workers = min(32, cpu_count() + 5)
+    input_message = f"""Enter the number of workers, the recommended 
+                        value for your computer is: {recomended_num_workers} """
+    num_workers_str = input(input_message)
+    num_workers = int(num_workers_str)
+    while not (num_workers_str.isnumeric() and num_workers > 0):
+        num_workers_str = input(f"{num_workers_str} is not a valid literal int, please enter a valid literal int")
+        num_workers = int(num_workers_str)
+
+    wikipedia_urls = wiki_link_back_gen(input_url, num_workers)
     print(f"Those are the pages that the page {input_url} has a url to and they have a url to {input_url}")
     print()
     for linked_page_url in wikipedia_urls:
