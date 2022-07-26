@@ -1,13 +1,11 @@
 from typing import Generator, Callable, Optional, List
 import re
 from urllib.request import urlopen
-from urllib.error import URLError, HTTPError, ContentTooShortError
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from multiprocessing.pool import ThreadPool
 from os import cpu_count
 
 
-def is_wiki_page(url: str, language: str) -> bool:
+def is_wiki_page(url: str) -> bool:
     """Returns true if url is a url to an existing wikipedia page and false otherwise."""
     if not isinstance(url, str): 
         return False
@@ -38,8 +36,10 @@ def link_list_to_url_list(links_list: List[str], language: str) -> Generator[str
     """Modifies the internal links to valid urls and removes non valid urls"""
     for i in range(len(links_list)):
         if links_list[i].startswith("/wiki/"):
-            links_list[i] = "https://en.wikipedia.org" + links_list[i]
-    return (url for url in links_list if is_wiki_page(url, language))
+            links_list[i] = f"https://{language}.wikipedia.org" + links_list[i]
+    for url in links_list:
+        if is_wiki_page(url): 
+            yield url
 
 
 def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> Generator[str, None, None]:
@@ -68,9 +68,7 @@ def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> Generator[str, N
 def main():
     print("A valid url is a string that starts with 'https://' and contains '.wikipedia.org/wiki/'")
     input_url = input("Enter a url to a wikipedia page")
-    while not is_wiki_page(input_url):
-        print("The url must be to a wikipedia page according to the requirements above.")
-        input_url = input("Enter a url to a wikipedia page")
+    if not is_wiki_page(input_url): main()
     # input_url = "https://en.wikipedia.org/wiki/Israel"
 
     print("The number of workers must be a literal positive int")
@@ -78,10 +76,9 @@ def main():
     input_message = f"""Enter the number of workers, the recommended 
                         value for your computer is: {recomended_num_workers} """
     num_workers_str = input(input_message)
+    if not num_workers_str.isnumeric(): main()
     num_workers = int(num_workers_str)
-    while not (num_workers_str.isnumeric() and num_workers > 0):
-        num_workers_str = input(f"{num_workers_str} is not a valid literal int, please enter a valid literal int")
-        num_workers = int(num_workers_str)
+    if num_workers == 0: main()
 
     wikipedia_urls = wiki_link_back_gen(input_url, num_workers)
     print(f"Those are the pages that the page {input_url} has a url to and they have a url to {input_url}")
