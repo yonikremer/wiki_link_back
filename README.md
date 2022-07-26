@@ -1,6 +1,6 @@
 # The challenge:
 In this challenge, the program gets a url to a wikipedia page (let's call is input_page) 
-and return every output_page that satisfies the following conditions:
+and prints every output_page that satisfies the following conditions:
 1. The output_page is a valid url to an active wikipedia page.
 2. The output_page has a link to input_page.
 3. The input_page has a link to output_page.
@@ -17,26 +17,29 @@ Or using the green "code" button in the github page
 # Running instructions:
 Run the commands:
 '$ cd PATH_TO_REPOSITORY'
-'$ python3 solutions.py'
-If that doesn't work, replace 'python3' with 'python', 'py3' and 'py'
+'$ python3 solution.py'
+If that doesn't work, try replacing 'python3' with 'python', 'py3' and 'py'
+Or simply run solution.py using the code editor
 
 Than you will the following messages: 
-A valid url is a string that starts with 'https://' and contains '.wikipedia.org/wiki/'
+The url must also be a working url to an active wikipedia page
 Enter a url to a wikipedia page
 
-Than you need to enter a url according to the requirements in the message
-
 Than you will get the following message:
-The number of workers must be a literal positive int
-Enter the number of workers, the recommended value for your computer is: ____
-
-Than you need to enter the maximum number of workers
+Enter the number of workers,
+the recommended value for your computer is:
 
 If the url and number of workers are valid the program will print:
 Those are the pages that the page input_url has a url to and they have a link to input_url
-And than prints every the output_url the satisfy:
-for your_input, output_url:
-	>both are valid urls to a wikipedia pages
-    >the page in your_input has a url to the page in output_url
-    >the page in output_url has a url to the page in your_input
-Every url will be printed in a separate line
+And than prints every the output_url according to the rules in the first section.
+
+# Testing:
+You can my unit tests using the command:
+'$ python3 test_solution.py'
+Notice that testing could be slow because it's running the program many times.
+
+# Other notes:
+I used type hints but I know some people don't use them, I could adjust my style according the team.
+I used the following standard libraries:
+unittest, random, typing, re (regular expressions), urllib, concurrent.futures, os
+I didn't use pytest because it is not a standard library.
