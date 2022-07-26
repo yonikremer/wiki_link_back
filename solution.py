@@ -13,11 +13,6 @@ def is_wiki_page(url: str) -> bool:
     is_wiki_articale = ".wikipedia.org/wiki/" in url
     if not (is_secure and is_wiki_articale): return False
     if "File:" in url: return False
-    # try:
-    #     website_is_up = urlopen(url).getcode() == 200
-    # except (URLError, HTTPError, ContentTooShortError, ValueError):
-    #     website_is_up = False
-    # return website_is_up
     return True
 
 
@@ -66,10 +61,11 @@ def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> Generator[str, N
 
 
 def main():
-    print("A valid url is a string that starts with 'https://' and contains '.wikipedia.org/wiki/'")
-    input_url = input("Enter a url to a wikipedia page")
-    if not is_wiki_page(input_url): main()
+    # print("A valid url is a string that starts with 'https://' and contains '.wikipedia.org/wiki/'")
+    # input_url = input("Enter a url to a wikipedia page")
+    # if not is_wiki_page(input_url): main()
     # input_url = "https://en.wikipedia.org/wiki/Israel"
+    input_url = "https://en.wikipedia.org/wiki/Red_Sea"
 
     print("The number of workers must be a literal positive int")
     recomended_num_workers = min(32, cpu_count() + 5)
