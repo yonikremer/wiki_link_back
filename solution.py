@@ -1,3 +1,6 @@
+"""The solution to the challenge. Read more at the readme file"""
+
+
 from typing import Generator, Callable, Optional, List
 import re
 from urllib.request import urlopen
@@ -7,40 +10,47 @@ from os import cpu_count
 
 def is_wiki_page(url: str) -> bool:
     """Returns true if url is a url to an existing wikipedia page and false otherwise."""
-    if not isinstance(url, str): 
+    if not isinstance(url, str):
         return False
     is_secure = url.startswith("https://")
-    is_wiki_articale = ".wikipedia.org/wiki/" in url
-    if not (is_secure and is_wiki_articale): return False
-    if "File:" in url: return False
+    in_wikipedia_org = ".wikipedia.org/wiki/" in url
+    if not (is_secure and in_wikipedia_org):
+        return False
     return True
 
 
 def get_has_link_func(url_to: str) -> Callable[[str], Optional[str]]:
-    """Given a target url, returns a function that checks if a url has a link to the target url"""
+    """Given a target url, returns a function that checks if a url has a link back to the target url.
+    If that is the case, return the second url, otherwise return None."""
     def has_link(url_from: str) -> Optional[str]:
-        """Returns true if url is a link from url_from to url_to and false otherwise"""
+        if url_from == url_to:
+            return url_from
+        if "File:" in url_from: 
+            return None
         from_page_html_str: str = urlopen(url_from).read().decode("utf-8")
         link_to_page: str = url_to[url_to.find("/wiki/"):]
-        if link_to_page in from_page_html_str: return url_from
+        if link_to_page in from_page_html_str:
+            return url_from
         return None
     return has_link
 
 
 def link_list_to_url_list(links_list: List[str], language: str) -> Generator[str, None, None]: 
     """Modifies the internal links to valid urls and removes non valid urls"""
-    for i in range(len(links_list)):
-        if links_list[i].startswith("/wiki/"):
-            links_list[i] = f"https://{language}.wikipedia.org" + links_list[i]
-    for url in links_list:
-        if is_wiki_page(url): 
+    url_list= []
+    for link in links_list:
+        if link.startswith("/wiki/"):
+            url_list.append(f"https://{language}.wikipedia.org" + link)
+        else:
+            url_list.append(link)
+    for url in url_list:
+        if is_wiki_page(url):
             yield url
 
 
 def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> Generator[str, None, None]:
-    """
-    A generator function that gets a url to a wikipedia page and returns all urls to other wikipedia pages 
-    that have a link back to the original page.
+    """A generator function that gets a url to a wikipedia page
+     and returns all urls to other wikipedia pages that have a link back to the original page.
     num_workers is the number of processes to use in the thread pool.
     """
     html_string_page: str = urlopen(input_url).read().decode("utf-8")
@@ -61,26 +71,29 @@ def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> Generator[str, N
 
 
 def main():
-    print("A valid url is a string that starts with 'https://' and contains '.wikipedia.org/wiki/'")
-    input_url = input("Enter a url to a wikipedia page")
-    if not is_wiki_page(input_url): main()
-    # input_url = "https://en.wikipedia.org/wiki/Israel"
-    # input_url = "https://en.wikipedia.org/wiki/Red_Sea"
+    """The function called when running the file solution.py
+       read more in the readme file"""
+    print("The url must also be a working url to an active wikipedia page")
+    input_url: str = input("Enter a url to a wikipedia page")
+    if not is_wiki_page(input_url):
+        main()
 
     print("The number of workers must be a literal positive int")
-    recomended_num_workers = min(32, cpu_count() + 5)
-    input_message = f"""Enter the number of workers, the recommended 
-                        value for your computer is: {recomended_num_workers} """
+    recommended_num_workers = min(32, cpu_count() + 5)
+    input_message = f"""Enter the number of workers,
+    the recommended value for your computer is: {recommended_num_workers} """
     num_workers_str = input(input_message)
-    if not num_workers_str.isnumeric(): main()
+    if not num_workers_str.isnumeric():
+        main()
     num_workers = int(num_workers_str)
-    if num_workers == 0: main()
+    if num_workers == 0:
+        main()
 
-    wikipedia_urls = wiki_link_back_gen(input_url, num_workers)
+    wikipedia_urls: Generator[str, None, None] = wiki_link_back_gen(input_url, num_workers)
     print(f"Those are the pages that the page {input_url} has a url to and they have a url to {input_url}")
     print()
-    for linked_page_url in wikipedia_urls:
-        print(linked_page_url)
+    for output_url in wikipedia_urls:
+        print(output_url)
 
 
 if __name__ == "__main__":
