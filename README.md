@@ -19,12 +19,12 @@ Enter a url to a wikipedia page
 Than you need to enter a url according to the requirements in the message
 
 Than you will get the following message:
-The number of procceses must be a literal positive int
-Enter the number of procceses, it's recommended to use the number of cpu's which is (the numer of cpus on your device)
+The number of workers must be a literal positive int
+Enter the number of workers, the recommended value for your computer is: ____
 
-Than you need to enter the number of procces
+Than you need to enter the maximum number of workers
 
-If the url and number of procceses are valid the program will print:
+If the url and number of workers are valid the program will print:
 Those are the pages that the page input_url has a url to and they have a link to input_url
 And than prints every the output_url the satisfy:
 for your_input, output_url:
