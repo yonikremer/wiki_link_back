@@ -17,14 +17,14 @@ A valid url is a string that starts with 'https://' and contains '.wikipedia.org
 Enter a url to a wikipedia page
 
 Than you need to enter a url according to the requirements in the message
-If the input is NOT valid, tou will get the messages:
 
-The url must be to a wikipedia page according to the requirements above.
-Enter a url to a wikipedia page
+Than you will get the following message:
+The number of procceses must be a literal positive int
+Enter the number of procceses, it's recommended to use the number of cpu's which is (the numer of cpus on your device)
 
-Untill you will enter a valid url
+Than you need to enter the number of procces
 
-If the url is valid the program will print:
+If the url and number of procceses are valid the program will print:
 Those are the pages that the page input_url has a url to and they have a link to input_url
 And than prints every the output_url the satisfy:
 for your_input, output_url:
