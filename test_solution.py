@@ -6,8 +6,7 @@ import unittest
 import random
 from typing import Tuple
 
-from solution import wiki_link_back_gen, is_wiki_page
-
+from solution import wiki_link_back_gen, url_is_wiki_page
 class TestSolution(TestCase):
     """A unittest for solution.py"""
     valid_urls: Tuple[str] = (
@@ -62,11 +61,11 @@ class TestSolution(TestCase):
         """Asserts that is_wiki_page returns true for valid urls"""
         for valid_url in self.valid_urls:
             with self.subTest(valid_url=valid_url):
-                self.assertTrue(is_wiki_page(valid_url))
+                self.assertTrue(url_is_wiki_page(valid_url))
 
         for invalid_url in self.invalid_urls:
             with self.subTest(invalid_url=invalid_url):
-                self.assertFalse(is_wiki_page(invalid_url))
+                self.assertFalse(url_is_wiki_page(invalid_url))
 
 
     def test_generating_strings(self):
