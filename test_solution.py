@@ -6,7 +6,8 @@ import unittest
 import random
 from typing import Tuple
 
-from solution import wiki_link_back_gen, url_is_wiki_page
+from solution import url_is_wiki_page, wiki_link_back_gen
+
 class TestSolution(TestCase):
     """A unittest for solution.py"""
     valid_urls: Tuple[str] = (
@@ -87,7 +88,7 @@ class TestSolution(TestCase):
     def test_one_sided(self):
         """Asserts that the wiki_link_back_gen does not generate
            a url that does not have a link back to the original page"""
-        for url2, url1 in self.one_sided_pairs: 
+        for url2, url1 in self.one_sided_pairs:
             with self.subTest(url1=url1, url2=url2):
                 self.test_is_not_solution(url1, url2)
                 self.test_is_not_solution(url2, url1)

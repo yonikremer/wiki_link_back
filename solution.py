@@ -19,26 +19,29 @@ def url_is_wiki_page(url: str) -> bool:
     return is_secure and in_wikipedia_org
 
 
-def get_has_link_func(url_to: str) -> Callable[[str], bool]:
+def create_has_link_func(url_to: str) -> Callable[[str], bool]:
     """Given a target url, returns a function that checks
     if a url has a link back to the target url.
     If that is the case, return the second url, otherwise return None."""
 
-    def has_link(url_from: str) -> bool:
+    def has_link_to_input_url(url_from: str) -> bool:
         if url_from == url_to:
             return url_from
-        if "File:" in url_from: 
-            return None
+        if "File:" in url_from:
+            return False
         from_page_html_str: str = urlopen(url_from).read().decode("utf-8")
-        link_to_page: str = url_to[url_to.find("/wiki/"):]
-        return link_to_page in from_page_html_str
+        internal_link: str = url_to[url_to.find("/wiki/"):]
+        return internal_link in from_page_html_str
 
-    has_link.__name__ = f"has_link_to_{url_to}"
-    return has_link
+    has_link_to_input_url.__name__ = f"has_link_to_{url_to}"
+    return has_link_to_input_url
 
 
-def link_list_to_url_list(links_list: List[str], sub_domain: str) -> Generator[str, None, None]: 
-    """Modifies the internal links to valid urls and removes non valid urls"""
+def link_list_to_url_list(links_list: List[str], sub_domain: str) -> Generator[str, None, None]:
+    """Modifies the internal links to valid urls and removes non valid urls
+    examples: https://en.wikipedia.org/wiki/Israel -> https://en.wikipedia.org/wiki/Israel
+    /wiki/Israel -> https://{sub_domain}.wikipedia.org/wiki/Israel"""
+
     url_list= []
     for link in links_list:
         if link.startswith("/wiki/"):
@@ -61,7 +64,7 @@ def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> Generator[str, N
     index_stop_sub_domain = input_url.index(".")
     sub_domain: str = input_url[index_start_sub_domain:index_stop_sub_domain]
     url_gen: Generator[str, None, None] = link_list_to_url_list(link_list, sub_domain)
-    has_link_to_input: Callable[[str], Optional[str]] = get_has_link_func(input_url)
+    has_link_to_input: Callable[[str], Optional[str]] = create_has_link_func(input_url)
 
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
         future_to_url = {executor.submit(has_link_to_input, url): url for url in url_gen}
