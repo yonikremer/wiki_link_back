@@ -11,6 +11,9 @@ from os import cpu_count
 import sys
 
 
+StringGenerator = Generator[str, None, None]
+
+
 def url_is_active(url: str) -> bool:
     """Returns true if you can get the content of the url and false otherwise."""
     return urlopen(url).get_code() == 200
@@ -43,7 +46,7 @@ def create_has_link_func(url_to: str) -> Callable[[str], bool]:
     return has_link_to_input_url
 
 
-def link_list_to_url_list(links_list: List[str], sub_domain: str) -> Generator[str, None, None]:
+def link_list_to_url_list(links_list: List[str], sub_domain: str) -> StringGenerator:
     """Modifies the internal links to valid urls and removes non valid urls
     examples: https://en.wikipedia.org/wiki/Israel -> https://en.wikipedia.org/wiki/Israel
     /wiki/Israel -> https://{sub_domain}.wikipedia.org/wiki/Israel"""
@@ -59,7 +62,7 @@ def link_list_to_url_list(links_list: List[str], sub_domain: str) -> Generator[s
             yield url
 
 
-def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> Generator[str, None, None]:
+def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> StringGenerator:
     """A generator function that gets a url to a wikipedia page
      and returns all urls to other wikipedia pages that have a link back to the original page.
     num_workers is the number of processes to use in the thread pool.
@@ -69,7 +72,7 @@ def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> Generator[str, N
     index_start_sub_domain = input_url.index("//") + 2
     index_stop_sub_domain = input_url.index(".")
     sub_domain: str = input_url[index_start_sub_domain:index_stop_sub_domain]
-    url_gen: Generator[str, None, None] = link_list_to_url_list(link_list, sub_domain)
+    url_gen: StringGenerator = link_list_to_url_list(link_list, sub_domain)
     has_link_to_input: Callable[[str], Optional[str]] = create_has_link_func(input_url)
 
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
@@ -84,7 +87,6 @@ def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> Generator[str, N
 def main():
     """The function called when running the file solution.py
        read more in the readme file"""
-
     arguments = sys.argv
     if len(arguments) > 1 and url_is_wiki_page(arguments[1]) and url_is_active(arguments[1]):
         input_url = arguments[1]
@@ -111,7 +113,7 @@ def main():
     if num_workers == 0:
         main()
 
-    wikipedia_urls: Generator[str, None, None] = wiki_link_back_gen(input_url, num_workers)
+    wikipedia_urls: StringGenerator = wiki_link_back_gen(input_url, num_workers)
     print(f"Those are the pages that the page {input_url} has a url to and they have a url to {input_url}")
     print()
     for output_url in wikipedia_urls:
