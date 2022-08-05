@@ -78,7 +78,6 @@ You can my unit tests using the command:
 Notice that testing could be slow because it's running the program many times.
 
 # Other notes:
-I used type hints but I know some people don't use them, I could adjust my style according the team.
 I used the following standard libraries:
 unittest, random, typing, re (regular expressions), urllib, concurrent.futures, os
 I didn't use pytest because it is not a standard library.

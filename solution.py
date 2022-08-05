@@ -3,7 +3,6 @@ run this file to use the program.
 Read more at the readme file"""
 
 
-from typing import Generator, Callable, Optional, List, Iterable, Set
 from re import findall
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
@@ -13,7 +12,6 @@ import sys
 
 
 default_num_workers = min(32, cpu_count() + 5)
-StringGenerator: type = Generator[str, None, None]
 
 
 def connected_to_internet(known_active_url = 'https://google.com'):
@@ -25,7 +23,7 @@ def connected_to_internet(known_active_url = 'https://google.com'):
     return True
 
 
-def url_is_active(url: str) -> bool:
+def url_is_active(url):
     """Returns true if you can get the content of the url and false otherwise."""
     try:
         return urlopen(url).getcode() == 200
@@ -33,7 +31,7 @@ def url_is_active(url: str) -> bool:
         return False
 
 
-def url_is_wiki_page(url: str) -> bool:
+def url_is_wiki_page(url):
     """Returns true if url is a url to an existing wikipedia page and false otherwise."""
     if not isinstance(url, str):
         return False
@@ -42,12 +40,12 @@ def url_is_wiki_page(url: str) -> bool:
     return uses_http and in_wikipedia_org
 
 
-def create_has_link_func(url_to: str) -> Callable[[str], bool]:
+def create_has_link_func(url_to):
     """Given a target url, returns a function that checks
     if a url has a link back to the target url.
     If that is the case, return the second url, otherwise return None."""
 
-    def has_link_to_input_url(url_from: str) -> bool:
+    def has_link_to_input_url(url_from):
         if "File:" in url_from or url_from == url_to:
             return False
         from_page_html_str: str = urlopen(url_from).read().decode("utf-8")
@@ -58,11 +56,11 @@ def create_has_link_func(url_to: str) -> Callable[[str], bool]:
     return has_link_to_input_url
 
 
-def link_iter_to_url_gen(urls: Iterable[str], sub_domain: str) -> StringGenerator:
+def link_iter_to_url_gen(urls, sub_domain):
     """Modifies the internal links to valid urls and removes non valid urls
     examples: https://en.wikipedia.org/wiki/Israel -> https://en.wikipedia.org/wiki/Israel
     /wiki/Israel -> https://{sub_domain}.wikipedia.org/wiki/Israel"""
-    already_generated: Set[str] = set([])
+    already_generated = set([])
     for url in urls:
         if not url in already_generated:
             already_generated.add(url)
@@ -72,18 +70,18 @@ def link_iter_to_url_gen(urls: Iterable[str], sub_domain: str) -> StringGenerato
                 yield url
 
 
-def wiki_link_back_gen(input_url: str, num_workers: int = default_num_workers) -> StringGenerator:
+def wiki_link_back_gen(input_url, num_workers = default_num_workers):
     """A generator function that gets a url to a wikipedia page
      and returns all urls to other wikipedia pages that have a link back to the original page.
     num_workers is the number of processes to use in the thread pool.
     """
-    html_page: str = urlopen(input_url).read().decode("utf-8")
-    link_list: List[str] = findall("href=[\"\'](.*?)[\"\']", html_page)
+    html_page = urlopen(input_url).read().decode("utf-8")
+    links = findall("href=[\"\'](.*?)[\"\']", html_page)
     index_start_sub_domain = input_url.index("//") + 2
     index_stop_sub_domain = input_url.index(".")
-    sub_domain: str = input_url[index_start_sub_domain:index_stop_sub_domain]
-    url_gen: StringGenerator = link_iter_to_url_gen(link_list, sub_domain)
-    has_link_to_input: Callable[[str], bool] = create_has_link_func(input_url)
+    sub_domain = input_url[index_start_sub_domain : index_stop_sub_domain]
+    url_gen = link_iter_to_url_gen(links, sub_domain)
+    has_link_to_input = create_has_link_func(input_url)
 
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
         future_to_url = {executor.submit(has_link_to_input, url): url for url in url_gen}
@@ -94,13 +92,13 @@ def wiki_link_back_gen(input_url: str, num_workers: int = default_num_workers) -
                 yield curr_url
 
 
-def get_input_url() -> str:
+def get_input_url():
     """Returns the input url from the command line from the user."""
     command_line_arguments = sys.argv
     if len(command_line_arguments) > 1:
         entered_url = command_line_arguments[1]
     else:
-        entered_url: str = input("Enter your URL: \n")
+        entered_url = input("Enter your URL: \n")
 
     if not url_is_wiki_page(entered_url):
         error_message = """
@@ -122,9 +120,9 @@ def get_input_url() -> str:
     return get_input_url()
 
 
-def get_max_num_workers() -> int:
+def get_max_num_workers():
     """Returns the max number of workers to use in the thread pool from the user."""
-    command_line_arguments: List[str] = sys.argv
+    command_line_arguments = sys.argv
     if len(command_line_arguments) > 2:
         num_workers_str = command_line_arguments[2]
     else:
@@ -160,7 +158,7 @@ def main():
     input_url = get_input_url()
     max_num_workers = get_max_num_workers()
 
-    wikipedia_urls: StringGenerator = wiki_link_back_gen(input_url, max_num_workers)
+    wikipedia_urls = wiki_link_back_gen(input_url, max_num_workers)
     print(f"Those are the pages that satisfy the rules at README.md for the input {input_url}: \n")
     for output_url in wikipedia_urls:
         print(output_url)
