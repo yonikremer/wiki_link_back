@@ -101,9 +101,9 @@ def main():
                 main()
 
     print("The number of workers must be a literal positive int")
-    recommended_num_workers = min(32, cpu_count() + 5)
+    default_num_workers = min(32, cpu_count() + 5)
     input_message = f"""Enter the number of workers,
-    the recommended value for your computer is: {recommended_num_workers} """
+    the default value for your computer is: {default_num_workers} """
     num_workers_str = input(input_message)
     if not num_workers_str.isnumeric():
         main()
