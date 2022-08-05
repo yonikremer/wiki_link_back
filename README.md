@@ -12,18 +12,22 @@ Internet connection
 # Clone:
 You can clone the repository using the command:
 '$ git clone https://github.com/yonikremer/wiki_link_back'
-Or using the green "code" button in the github page
+Or using the green "code" button in the github page to download the reposetory as a zip file and then unzip it.
 
-# Running instructions:
+# Running instructions
 Run the commands:
-'$ cd PATH_TO_REPOSITORY'
-'$ python3 solution.py'
-If that doesn't work, try replacing 'python3' with 'python', 'py3' and 'py'
+```$ cd PATH_TO_REPOSITORY```
+```$ python solution <https://{sub_domain}.wikipedia.org/wiki/{page_name}>```
+If that doesn't work, try replacing 'python' with 'py', 'py3' and 'python3'.
 Or simply run solution.py using the code editor
 
-Than you will the following messages: 
+If the url you provided is not valid, you will the following messages: 
 The url must also be a working url to an active wikipedia page
-Enter a url to a wikipedia page
+The Requirements are:
+A string
+Full path leading to active page
+Starting with https://
+Containing .wikipedia.org
 
 Than you will get the following message:
 Enter the number of workers,

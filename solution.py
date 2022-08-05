@@ -8,6 +8,10 @@ import re
 from urllib.request import urlopen
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from os import cpu_count
+import sys
+
+from tqdm import tqdm
+
 
 
 def url_is_wiki_page(url: str) -> bool:
@@ -78,10 +82,20 @@ def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> Generator[str, N
 def main():
     """The function called when running the file solution.py
        read more in the readme file"""
-    print("The url must also be a working url to an active wikipedia page")
-    input_url: str = input("Enter a url to a wikipedia page")
-    if not url_is_wiki_page(input_url):
-        main()
+
+    command_line_args = sys.argv
+    if len(command_line_args) > 1 and url_is_wiki_page(command_line_args[1]):
+        input_url = command_line_args
+    else:
+        print("The url must also be a working url to an active wikipedia page")
+        print("The Requirements are:")
+        print("A string")
+        print("Full path leading to active page")
+        print("Starting with https://")
+        print("Containing .wikipedia.org")
+        input_url: str = input("Enter your URL")
+        if not url_is_wiki_page(input_url):
+            main()
 
     print("The number of workers must be a literal positive int")
     recommended_num_workers = min(32, cpu_count() + 5)
