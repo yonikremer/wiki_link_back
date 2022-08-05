@@ -160,8 +160,7 @@ def main():
     max_num_workers = get_max_num_workers()
 
     wikipedia_urls: StringGenerator = wiki_link_back_gen(input_url, max_num_workers)
-    print(f"Those are the pages that the page {input_url} has a url to and they have a url to {input_url}")
-    print()
+    print(f"Those are the pages that satisfy the rules at README.md for the input {input_url}: \n")
     for output_url in wikipedia_urls:
         print(output_url)
 
