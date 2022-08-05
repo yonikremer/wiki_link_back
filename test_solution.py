@@ -44,19 +44,18 @@ class TestSolution(TestCase):
 
     def test_is_solution(self, url_input: str, url_output: str) -> None:
         """Asserts that url2 is generated from by calling wiki_link_back_gen(url1)"""
-        url2_is_ans_to_url1 = False
-        for url_answer_to1 in wiki_link_back_gen(url_input):
-            if url_answer_to1 == url_output:
-                url2_is_ans_to_url1 = True
-                break
-        self.assertTrue(url2_is_ans_to_url1)
+        for answer in wiki_link_back_gen(url_input):
+            if answer == url_output:
+                return
+        message = f"{url_output} is not generated from {url_input}."
+        self.fail(message)
 
 
     def test_is_not_solution(self, url_input: str, url_output: str):
         """Asserts that url2 is NOT generated from by calling wiki_link_back_gen(url1)"""
-        for url_answer_to1 in wiki_link_back_gen(url_input):
+        for answer in wiki_link_back_gen(url_input):
             message = f"{url_output} is generated from {url_input} when is should not."
-            self.assertNotEqual(url_answer_to1, url_output, message)
+            self.assertNotEqual(answer, url_output, message)
 
 
     def test_is_wiki_page(self):
