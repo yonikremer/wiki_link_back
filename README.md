@@ -12,12 +12,12 @@ Internet connection
 # Clone:
 You can clone the repository using the command:
 '$ git clone https://github.com/yonikremer/wiki_link_back'
-Or using the green "code" button in the github page to download the reposetory as a zip file and then unzip it.
+Or using the green "code" button in the github page to download the repository as a zip file and then unzip it.
 
 # Running instructions
 Run the commands:
 ```$ cd PATH_TO_REPOSITORY```
-```$ python solution <{your url}>```
+```$ python solution <{your url} {maximum number of workers}>```
 
 The requirements for the url:
 The url must also be a working url to an active wikipedia page

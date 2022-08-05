@@ -4,7 +4,7 @@ Read more at the readme file"""
 
 
 from typing import Generator, Callable, Optional, List, Iterable
-import re
+from re import findall
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -12,6 +12,7 @@ from os import cpu_count
 import sys
 
 
+default_num_workers = min(32, cpu_count() + 5)
 StringGenerator: type = Generator[str, None, None]
 
 
@@ -70,13 +71,13 @@ def link_iter_to_url_gen(links_list: Iterable[str], sub_domain: str) -> StringGe
             yield link
 
 
-def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> StringGenerator:
+def wiki_link_back_gen(input_url: str, num_workers: int = default_num_workers) -> StringGenerator:
     """A generator function that gets a url to a wikipedia page
      and returns all urls to other wikipedia pages that have a link back to the original page.
     num_workers is the number of processes to use in the thread pool.
     """
-    html_string_page: str = urlopen(input_url).read().decode("utf-8")
-    link_list: List[str] = re.findall("href=[\"\'](.*?)[\"\']", html_string_page)
+    html_page: str = urlopen(input_url).read().decode("utf-8")
+    link_list: List[str] = findall("href=[\"\'](.*?)[\"\']", html_page)
     index_start_sub_domain = input_url.index("//") + 2
     index_stop_sub_domain = input_url.index(".")
     sub_domain: str = input_url[index_start_sub_domain:index_stop_sub_domain]
@@ -92,6 +93,48 @@ def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> StringGenerator:
                 yield curr_url
 
 
+def get_input_url() -> str:
+    """Returns the input url from the command line."""
+    cmd_args = sys.argv
+    if len(cmd_args) > 1 and url_is_wiki_page(cmd_args[1]) and url_is_active(cmd_args[1]):
+        return cmd_args[1]
+    input_url: str = input("Enter your URL: \n")
+    if not url_is_wiki_page(input_url):
+        print("The url must also be a working url to an active wikipedia page")
+        print("The Requirements are:")
+        print("A string")
+        print("Full path leading to active page")
+        print("Starting with https:// or http://")
+        print("Containing .wikipedia.org")
+        return get_input_url()
+    if  not url_is_active(input_url):
+        print(f"The page in {input_url} is not active or does not exist.")
+        return get_input_url()
+
+
+def get_max_num_workers() -> int:
+    """Returns the max number of workers to use in the thread pool."""
+    cmd_args = sys.argv
+    if len(cmd_args) > 2:
+        num_workers_str = sys.argv[2]
+    else:
+        input_message = f"""Enter the number of workers.
+        The number of workers must be a literal positive int.
+        The default value for your computer is: {default_num_workers} \n"""
+        num_workers_str = input(input_message)
+
+    while not num_workers_str.isnumeric():
+        print(f"{num_workers_str} is not a literal int, please enter a literal int")
+        num_workers_str = input("Please enter a literal int: \n")
+
+    num_workers = int(num_workers_str)
+    while num_workers < 1:
+        print(f"{num_workers} is not positive")
+        num_workers_str = input("Please enter a positive integer: \n")
+        num_workers = int(num_workers_str)
+    return num_workers
+
+
 def main():
     """The function called when running the file solution.py
        read more in the readme file"""
@@ -101,35 +144,10 @@ def main():
         return
     print("You are connected to the internet.")
 
-    arguments = sys.argv
-    if len(arguments) > 1 and url_is_wiki_page(arguments[1]) and url_is_active(arguments[1]):
-        input_url = arguments[1]
-    else:
-        input_url: str = input("Enter your URL: \n")
-        if not url_is_wiki_page(input_url):
-            print("The url must also be a working url to an active wikipedia page")
-            print("The Requirements are:")
-            print("A string")
-            print("Full path leading to active page")
-            print("Starting with https:// or http://")
-            print("Containing .wikipedia.org")
-            main()
-        if not (url_is_wiki_page(input_url) and url_is_active(input_url)):
-            print(f"The page in {input_url} is not active or does not exist.")
-            main()
+    input_url = get_input_url()
+    max_num_workers = get_max_num_workers()
 
-    print("The number of workers must be a literal positive int")
-    default_num_workers = min(32, cpu_count() + 5)
-    input_message = f"""Enter the number of workers,
-    the default value for your computer is: {default_num_workers} """
-    num_workers_str = input(input_message)
-    if not num_workers_str.isnumeric():
-        main()
-    num_workers = int(num_workers_str)
-    if num_workers == 0:
-        main()
-
-    wikipedia_urls: StringGenerator = wiki_link_back_gen(input_url, num_workers)
+    wikipedia_urls: StringGenerator = wiki_link_back_gen(input_url, max_num_workers)
     print(f"Those are the pages that the page {input_url} has a url to and they have a url to {input_url}")
     print()
     for output_url in wikipedia_urls:
