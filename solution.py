@@ -5,7 +5,7 @@ Read more at the readme file"""
 
 from typing import Generator, Callable, Optional, List, Iterable
 import re
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from os import cpu_count
@@ -15,11 +15,20 @@ import sys
 StringGenerator: type = Generator[str, None, None]
 
 
+def connected_to_internet(known_active_url: str = 'http://google.com'):
+    """Returns true if you are connected to internet and false otherwise."""
+    try:
+        urlopen(known_active_url)
+        return True
+    except Exception:
+        return False
+
+
 def url_is_active(url: str) -> bool:
     """Returns true if you can get the content of the url and false otherwise."""
     try:
         return urlopen(url).get_code() == 200
-    except HTTPError:
+    except (HTTPError, URLError):
         return False
 
 
@@ -91,6 +100,11 @@ def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> StringGenerator:
 def main():
     """The function called when running the file solution.py
        read more in the readme file"""
+    if not connected_to_internet():
+        print("You are not connected to the internet, Internet is required to run this program.")
+        print("Please connect to the internet and try again.")
+        return
+
     arguments = sys.argv
     if len(arguments) > 1 and url_is_wiki_page(arguments[1]) and url_is_active(arguments[1]):
         input_url = arguments[1]
