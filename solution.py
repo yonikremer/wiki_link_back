@@ -63,16 +63,11 @@ def link_list_to_url_list(links_list: Iterable[str], sub_domain: str) -> StringG
     """Modifies the internal links to valid urls and removes non valid urls
     examples: https://en.wikipedia.org/wiki/Israel -> https://en.wikipedia.org/wiki/Israel
     /wiki/Israel -> https://{sub_domain}.wikipedia.org/wiki/Israel"""
-
-    url_list= []
     for link in links_list:
         if link.startswith("/wiki/"):
-            url_list.append(f"https://{sub_domain}.wikipedia.org" + link)
-        else:
-            url_list.append(link)
-    for url in url_list:
-        if url_is_wiki_page(url):
-            yield url
+            link = f"https://{sub_domain}.wikipedia.org" + link
+        if url_is_wiki_page(link):
+            yield link
 
 
 def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> StringGenerator:
