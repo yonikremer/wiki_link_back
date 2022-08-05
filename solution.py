@@ -59,7 +59,7 @@ def create_has_link_func(url_to: str) -> Callable[[str], bool]:
     return has_link_to_input_url
 
 
-def link_list_to_url_list(links_list: Iterable[str], sub_domain: str) -> StringGenerator:
+def link_iter_to_url_gen(links_list: Iterable[str], sub_domain: str) -> StringGenerator:
     """Modifies the internal links to valid urls and removes non valid urls
     examples: https://en.wikipedia.org/wiki/Israel -> https://en.wikipedia.org/wiki/Israel
     /wiki/Israel -> https://{sub_domain}.wikipedia.org/wiki/Israel"""
@@ -80,7 +80,7 @@ def wiki_link_back_gen(input_url: str, num_workers: int = 9) -> StringGenerator:
     index_start_sub_domain = input_url.index("//") + 2
     index_stop_sub_domain = input_url.index(".")
     sub_domain: str = input_url[index_start_sub_domain:index_stop_sub_domain]
-    url_gen: StringGenerator = link_list_to_url_list(link_list, sub_domain)
+    url_gen: StringGenerator = link_iter_to_url_gen(link_list, sub_domain)
     has_link_to_input: Callable[[str], Optional[str]] = create_has_link_func(input_url)
 
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
