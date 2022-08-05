@@ -3,7 +3,7 @@ run this file to use the program.
 Read more at the readme file"""
 
 
-from typing import Generator, Callable, Optional, List
+from typing import Generator, Callable, Optional, List, Iterable
 import re
 from urllib.request import urlopen
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -11,7 +11,7 @@ from os import cpu_count
 import sys
 
 
-StringGenerator = Generator[str, None, None]
+StringGenerator: type = Generator[str, None, None]
 
 
 def url_is_active(url: str) -> bool:
@@ -46,7 +46,7 @@ def create_has_link_func(url_to: str) -> Callable[[str], bool]:
     return has_link_to_input_url
 
 
-def link_list_to_url_list(links_list: List[str], sub_domain: str) -> StringGenerator:
+def link_list_to_url_list(links_list: Iterable[str], sub_domain: str) -> StringGenerator:
     """Modifies the internal links to valid urls and removes non valid urls
     examples: https://en.wikipedia.org/wiki/Israel -> https://en.wikipedia.org/wiki/Israel
     /wiki/Israel -> https://{sub_domain}.wikipedia.org/wiki/Israel"""
