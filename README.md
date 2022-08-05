@@ -1,9 +1,33 @@
 # The challenge:
+
+## My description:
 In this challenge, the program gets a url to a wikipedia page (let's call is input_page) 
 and prints every output_page that satisfies the following conditions:
-1. The output_page is a valid url to an active wikipedia page.
-2. The output_page has a link to input_page.
-3. The input_page has a link to output_page.
+1. output_page is a valid url to an active wikipedia page.
+2. output_page has a link to input_page.
+3. input_page has a link to output_page.
+
+## As sent to me:
+In this exercise you will write a computer program that receives a URL to a Wikipedia article on the command line. The program will print a list of URLs to other Wikipedia articles:
+
+that are linked to from the original article
+and that also link back to it.
+the program will print one URL (that is linked and links back) per line to stdout
+For example, if we use the article about Israel
+
+``$ python my-program.py https://en.wikipedia.org/wiki/Israel```
+Then the article about Theodor Herzl will be among the results, since he is a very important figure in Israeli history - and thus the two articles link to each other.
+
+However (at least at the time of writing this document), the Israel article links to the Iron Age article, but the Iron Age article does not link back to Israel.
+
+To summarize this example, a correct program will print the link to the Theodor Herzl article, but not the link to the Iron Age article.
+
+Some rules:
+
+You may only use modules in the Python standard library.
+You should submit your work as a github repository, with a short README.md file that has instructions on how to run your program.
+You should not use comments in your code - try to make the code readable without comments
+bonus: parallelize your program so that it completes faster.
 
 # Requirements: 
 python 3.7+
