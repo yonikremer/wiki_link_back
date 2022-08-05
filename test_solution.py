@@ -21,6 +21,7 @@ class TestSolution(TestCase):
         "https://docs.python.org/3/library/unittest.html#subtests",
         "http://en.wikipedia.org/wiki/Red_Sea/",
         "https://mail.google.com/mail",
+        "/wiki/Israel",
         "Random text", "", {"key": "value"}, [1, 2, 3], None, 42
         )
 
