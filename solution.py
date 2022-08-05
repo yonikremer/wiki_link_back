@@ -15,13 +15,13 @@ import sys
 StringGenerator: type = Generator[str, None, None]
 
 
-def connected_to_internet(known_active_url: str = 'http://google.com'):
+def connected_to_internet(known_active_url: str = 'https://google.com'):
     """Returns true if you are connected to internet and false otherwise."""
     try:
         urlopen(known_active_url)
-        return True
-    except Exception:
+    except URLError:
         return False
+    return True
 
 
 def url_is_active(url: str) -> bool:
@@ -104,21 +104,24 @@ def main():
         print("You are not connected to the internet, Internet is required to run this program.")
         print("Please connect to the internet and try again.")
         return
+    print("You are connected to the internet.")
 
     arguments = sys.argv
     if len(arguments) > 1 and url_is_wiki_page(arguments[1]) and url_is_active(arguments[1]):
         input_url = arguments[1]
     else:
         input_url: str = input("Enter your URL: \n")
-        if not (url_is_wiki_page(input_url) and url_is_active(input_url)):
+        if not url_is_wiki_page(input_url):
             print("The url must also be a working url to an active wikipedia page")
             print("The Requirements are:")
             print("A string")
             print("Full path leading to active page")
             print("Starting with https:// or http://")
             print("Containing .wikipedia.org")
-            if not url_is_wiki_page(input_url):
-                main()
+            main()
+        if not (url_is_wiki_page(input_url) and url_is_active(input_url)):
+            print(f"The page in {input_url} is not active or does not exist.")
+            main()
 
     print("The number of workers must be a literal positive int")
     default_num_workers = min(32, cpu_count() + 5)
