@@ -48,9 +48,7 @@ def create_has_link_func(url_to: str) -> Callable[[str], bool]:
     If that is the case, return the second url, otherwise return None."""
 
     def has_link_to_input_url(url_from: str) -> bool:
-        if url_from == url_to:
-            return url_from
-        if "File:" in url_from:
+        if "File:" in url_from or url_from == url_to:
             return False
         from_page_html_str: str = urlopen(url_from).read().decode("utf-8")
         internal_link: str = url_to[url_to.find("/wiki/"):]
@@ -60,12 +58,12 @@ def create_has_link_func(url_to: str) -> Callable[[str], bool]:
     return has_link_to_input_url
 
 
-def link_iter_to_url_gen(url_iter: Iterable[str], sub_domain: str) -> StringGenerator:
+def link_iter_to_url_gen(urls: Iterable[str], sub_domain: str) -> StringGenerator:
     """Modifies the internal links to valid urls and removes non valid urls
     examples: https://en.wikipedia.org/wiki/Israel -> https://en.wikipedia.org/wiki/Israel
     /wiki/Israel -> https://{sub_domain}.wikipedia.org/wiki/Israel"""
     already_generated: Set[str] = set([])
-    for url in url_iter:
+    for url in urls:
         if not url in already_generated:
             already_generated.add(url)
             if url.startswith("/wiki/"):
@@ -85,7 +83,7 @@ def wiki_link_back_gen(input_url: str, num_workers: int = default_num_workers) -
     index_stop_sub_domain = input_url.index(".")
     sub_domain: str = input_url[index_start_sub_domain:index_stop_sub_domain]
     url_gen: StringGenerator = link_iter_to_url_gen(link_list, sub_domain)
-    has_link_to_input: Callable[[str], Optional[str]] = create_has_link_func(input_url)
+    has_link_to_input: Callable[[str], bool] = create_has_link_func(input_url)
 
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
         future_to_url = {executor.submit(has_link_to_input, url): url for url in url_gen}
