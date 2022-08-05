@@ -17,7 +17,16 @@ Or using the green "code" button in the github page to download the reposetory a
 # Running instructions
 Run the commands:
 ```$ cd PATH_TO_REPOSITORY```
-```$ python solution <https://{sub_domain}.wikipedia.org/wiki/{page_name}>```
+```$ python solution <{your url}>```
+
+The requirements for the url:
+The url must also be a working url to an active wikipedia page
+The Requirements are:
+A string
+Full path leading to active page
+Starting with https:// or http://
+Containing .wikipedia.org
+
 If that doesn't work, try replacing 'python' with 'py', 'py3' and 'python3'.
 Or simply run solution.py using the code editor
 
@@ -26,7 +35,7 @@ The url must also be a working url to an active wikipedia page
 The Requirements are:
 A string
 Full path leading to active page
-Starting with https://
+Starting with https:// or http://
 Containing .wikipedia.org
 
 Than you will get the following message:

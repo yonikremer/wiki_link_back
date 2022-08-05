@@ -10,17 +10,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from os import cpu_count
 import sys
 
-from tqdm import tqdm
-
-
 
 def url_is_wiki_page(url: str) -> bool:
     """Returns true if url is a url to an existing wikipedia page and false otherwise."""
     if not isinstance(url, str):
         return False
-    is_secure = url.startswith("https://")
+    uses_http = url.startswith("https://") or url.startswith("http://")
     in_wikipedia_org = ".wikipedia.org/wiki/" in url
-    return is_secure and in_wikipedia_org
+    return uses_http and in_wikipedia_org
 
 
 def create_has_link_func(url_to: str) -> Callable[[str], bool]:
@@ -91,7 +88,7 @@ def main():
         print("The Requirements are:")
         print("A string")
         print("Full path leading to active page")
-        print("Starting with https://")
+        print("Starting with https:// or http://")
         print("Containing .wikipedia.org")
         input_url: str = input("Enter your URL")
         if not url_is_wiki_page(input_url):
