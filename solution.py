@@ -48,8 +48,8 @@ def create_has_link_func(url_to):
     def has_link_to_input_url(url_from):
         if "File:" in url_from or url_from == url_to:
             return False
-        from_page_html_str: str = urlopen(url_from).read().decode("utf-8")
-        internal_link: str = url_to[url_to.find("/wiki/"):]
+        from_page_html_str = urlopen(url_from).read().decode("utf-8")
+        internal_link = url_to[url_to.find("/wiki/"):]
         return internal_link in from_page_html_str
 
     has_link_to_input_url.__name__ = f"has_link_to_{url_to}"

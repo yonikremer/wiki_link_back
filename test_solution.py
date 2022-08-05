@@ -4,20 +4,19 @@
 from unittest import TestCase
 import unittest
 import random
-from typing import Tuple
 
 from solution import url_is_wiki_page, wiki_link_back_gen
 
 class TestSolution(TestCase):
     """A unittest for solution.py"""
-    valid_urls: Tuple[str] = (
+    valid_urls = (
         "https://en.wikipedia.org/wiki/Israel",
         "https://en.wikipedia.org/wiki/Red_Sea",
         "https://en.wikipedia.org/wiki/Egypt",
         "https://he.wikipedia.org/wiki/%D7%99%D7%A9%D7%A8%D7%90%D7%9C"
         )
 
-    invalid_urls: Tuple[str] = (
+    invalid_urls = (
         "https://docs.python.org/3/library/unittest.html#subtests",
         "http://en.wikipedia.org/wiki/Red_Sea/",
         "https://mail.google.com/mail",
@@ -25,7 +24,7 @@ class TestSolution(TestCase):
         "Random text", "", {"key": "value"}, [1, 2, 3], None, 42
         )
 
-    known_url_pairs: Tuple[Tuple[str]] = (
+    known_url_pairs = (
         ("https://en.wikipedia.org/wiki/Israel",
             "https://en.wikipedia.org/wiki/Red_Sea"),
         ("https://en.wikipedia.org/wiki/Israel",
@@ -36,13 +35,13 @@ class TestSolution(TestCase):
             "https://en.wikipedia.org/wiki/Theodor_Herzl")
         )
 
-    one_sided_pairs: Tuple[Tuple[str]] = (
+    one_sided_pairs = (
         ("https://en.wikipedia.org/wiki/Israel", "https://en.wikipedia.org/wiki/Iron_Age"),
         ("https://en.wikipedia.org/wiki/Israel", "https://en.wikipedia.org/wiki/Middle_school")
         )
 
 
-    def test_is_solution(self, url_input: str, url_output: str) -> None:
+    def test_is_solution(self, url_input, url_output):
         """Asserts that url2 is generated from by calling wiki_link_back_gen(url1)"""
         for answer in wiki_link_back_gen(url_input):
             if answer == url_output:
@@ -51,7 +50,7 @@ class TestSolution(TestCase):
         self.fail(message)
 
 
-    def test_is_not_solution(self, url_input: str, url_output: str):
+    def test_is_not_solution(self, url_input, url_output):
         """Asserts that url2 is NOT generated from by calling wiki_link_back_gen(url1)"""
         for answer in wiki_link_back_gen(url_input):
             message = f"{url_output} is generated from {url_input} when is should not."
@@ -71,7 +70,7 @@ class TestSolution(TestCase):
 
     def test_generating_strings(self):
         """Asserts that the wiki_link_back_gen is generating strings."""
-        exm_valid_url: str = random.choice(self.valid_urls)
+        exm_valid_url = random.choice(self.valid_urls)
         answer_generator = wiki_link_back_gen(exm_valid_url, num_workers=1)
         first_ans = next(answer_generator)
         self.assertIsInstance(first_ans, str)
