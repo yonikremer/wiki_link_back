@@ -5,6 +5,7 @@ Read more at the readme file"""
 
 from typing import Generator, Callable, Optional, List, Iterable
 import re
+from urllib.error import HTTPError
 from urllib.request import urlopen
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from os import cpu_count
@@ -16,7 +17,10 @@ StringGenerator: type = Generator[str, None, None]
 
 def url_is_active(url: str) -> bool:
     """Returns true if you can get the content of the url and false otherwise."""
-    return urlopen(url).get_code() == 200
+    try:
+        return urlopen(url).get_code() == 200
+    except HTTPError:
+        return False
 
 
 def url_is_wiki_page(url: str) -> bool:
@@ -91,7 +95,7 @@ def main():
     if len(arguments) > 1 and url_is_wiki_page(arguments[1]) and url_is_active(arguments[1]):
         input_url = arguments[1]
     else:
-        input_url: str = input("Enter your URL")
+        input_url: str = input("Enter your URL: \n")
         if not (url_is_wiki_page(input_url) and url_is_active(input_url)):
             print("The url must also be a working url to an active wikipedia page")
             print("The Requirements are:")
