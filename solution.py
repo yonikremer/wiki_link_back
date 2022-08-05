@@ -60,15 +60,18 @@ def create_has_link_func(url_to: str) -> Callable[[str], bool]:
     return has_link_to_input_url
 
 
-def link_iter_to_url_gen(links_list: Iterable[str], sub_domain: str) -> StringGenerator:
+def link_iter_to_url_gen(url_iter: Iterable[str], sub_domain: str) -> StringGenerator:
     """Modifies the internal links to valid urls and removes non valid urls
     examples: https://en.wikipedia.org/wiki/Israel -> https://en.wikipedia.org/wiki/Israel
     /wiki/Israel -> https://{sub_domain}.wikipedia.org/wiki/Israel"""
-    for link in set(links_list):
-        if link.startswith("/wiki/"):
-            link = f"https://{sub_domain}.wikipedia.org" + link
-        if url_is_wiki_page(link):
-            yield link
+    already_generated: Set[str] = set([])
+    for url in url_iter:
+        if not url in already_generated:
+            already_generated.add(url)
+            if url.startswith("/wiki/"):
+                url = f"https://{sub_domain}.wikipedia.org" + url
+            if url_is_wiki_page(url):
+                yield url
 
 
 def wiki_link_back_gen(input_url: str, num_workers: int = default_num_workers) -> StringGenerator:
