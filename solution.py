@@ -11,6 +11,11 @@ from os import cpu_count
 import sys
 
 
+def url_is_active(url: str) -> bool:
+    """Returns true if you can get the content of the url and false otherwise."""
+    return urlopen(url).get_code() == 200
+
+
 def url_is_wiki_page(url: str) -> bool:
     """Returns true if url is a url to an existing wikipedia page and false otherwise."""
     if not isinstance(url, str):
@@ -80,19 +85,20 @@ def main():
     """The function called when running the file solution.py
        read more in the readme file"""
 
-    command_line_args = sys.argv
-    if len(command_line_args) > 1 and url_is_wiki_page(command_line_args[1]):
-        input_url = command_line_args
+    arguments = sys.argv
+    if len(arguments) > 1 and url_is_wiki_page(arguments[1]) and url_is_active(arguments[1]):
+        input_url = arguments[1]
     else:
-        print("The url must also be a working url to an active wikipedia page")
-        print("The Requirements are:")
-        print("A string")
-        print("Full path leading to active page")
-        print("Starting with https:// or http://")
-        print("Containing .wikipedia.org")
         input_url: str = input("Enter your URL")
-        if not url_is_wiki_page(input_url):
-            main()
+        if not (url_is_wiki_page(input_url) and url_is_active(input_url)):
+            print("The url must also be a working url to an active wikipedia page")
+            print("The Requirements are:")
+            print("A string")
+            print("Full path leading to active page")
+            print("Starting with https:// or http://")
+            print("Containing .wikipedia.org")
+            if not url_is_wiki_page(input_url):
+                main()
 
     print("The number of workers must be a literal positive int")
     recommended_num_workers = min(32, cpu_count() + 5)
