@@ -15,14 +15,15 @@ and that also link back to it.
 the program will print one URL (that is linked and links back) per line to stdout
 For example, if we use the article about Israel
 
-``$ python my-program.py https://en.wikipedia.org/wiki/Israel```
+```$ python my-program.py https://en.wikipedia.org/wiki/Israel```
+
 Then the article about Theodor Herzl will be among the results, since he is a very important figure in Israeli history - and thus the two articles link to each other.
 
 However (at least at the time of writing this document), the Israel article links to the Iron Age article, but the Iron Age article does not link back to Israel.
 
 To summarize this example, a correct program will print the link to the Theodor Herzl article, but not the link to the Iron Age article.
 
-Some rules:
+### Some rules:
 
 You may only use modules in the Python standard library.
 You should submit your work as a github repository, with a short README.md file that has instructions on how to run your program.
@@ -30,8 +31,9 @@ You should not use comments in your code - try to make the code readable without
 bonus: parallelize your program so that it completes faster.
 
 # Requirements: 
-python 3.7+
-Internet connection 
+python 3.10+ and Internet connection.
+
+The program should run in older versions of Python, but it wasn't tested.
 
 # Clone:
 You can clone the repository using the command:
