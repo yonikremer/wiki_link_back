@@ -3,7 +3,7 @@ run this file to use the program.
 Read more at the readme file"""
 
 
-from typing import Generator, Callable, Optional, List, Iterable
+from typing import Generator, Callable, Optional, List, Iterable, Set
 from re import findall
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
@@ -64,7 +64,7 @@ def link_iter_to_url_gen(links_list: Iterable[str], sub_domain: str) -> StringGe
     """Modifies the internal links to valid urls and removes non valid urls
     examples: https://en.wikipedia.org/wiki/Israel -> https://en.wikipedia.org/wiki/Israel
     /wiki/Israel -> https://{sub_domain}.wikipedia.org/wiki/Israel"""
-    for link in links_list:
+    for link in set(links_list):
         if link.startswith("/wiki/"):
             link = f"https://{sub_domain}.wikipedia.org" + link
         if url_is_wiki_page(link):
