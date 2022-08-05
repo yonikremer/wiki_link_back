@@ -16,7 +16,7 @@ default_num_workers = min(32, cpu_count() + 5)
 StringGenerator: type = Generator[str, None, None]
 
 
-def connected_to_internet(known_active_url: str = 'https://google.com'):
+def connected_to_internet(known_active_url = 'https://google.com'):
     """Returns true if you are connected to internet and false otherwise."""
     try:
         urlopen(known_active_url)
@@ -28,7 +28,7 @@ def connected_to_internet(known_active_url: str = 'https://google.com'):
 def url_is_active(url: str) -> bool:
     """Returns true if you can get the content of the url and false otherwise."""
     try:
-        return urlopen(url).get_code() == 200
+        return urlopen(url).getcode() == 200
     except (HTTPError, URLError):
         return False
 
