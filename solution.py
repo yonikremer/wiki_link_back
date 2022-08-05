@@ -94,29 +94,38 @@ def wiki_link_back_gen(input_url: str, num_workers: int = default_num_workers) -
 
 
 def get_input_url() -> str:
-    """Returns the input url from the command line."""
-    cmd_args = sys.argv
-    if len(cmd_args) > 1 and url_is_wiki_page(cmd_args[1]) and url_is_active(cmd_args[1]):
-        return cmd_args[1]
-    input_url: str = input("Enter your URL: \n")
-    if not url_is_wiki_page(input_url):
-        print("The url must also be a working url to an active wikipedia page")
-        print("The Requirements are:")
-        print("A string")
-        print("Full path leading to active page")
-        print("Starting with https:// or http://")
-        print("Containing .wikipedia.org")
+    """Returns the input url from the command line from the user."""
+    command_line_arguments = sys.argv
+    if len(command_line_arguments) > 1:
+        entered_url = command_line_arguments[1]
+    else:
+        entered_url: str = input("Enter your URL: \n")
+
+    if not url_is_wiki_page(entered_url):
+        error_message = """
+        The url must also be a working url to an active wikipedia page.
+        The Requirements are:
+        1. The url must start with either http:// or https://
+        2. The url must include with .wikipedia.org/wiki/
+        3. The url must be a valid url to an active wikipedia page.
+        """
         return get_input_url()
-    if  not url_is_active(input_url):
-        print(f"The page in {input_url} is not active or does not exist.")
-        return get_input_url()
+
+    if not url_is_active(entered_url):
+        error_message = f"The page in {entered_url} is not active or does not exist."
+
+    if url_is_wiki_page(entered_url) and url_is_active(entered_url):
+        return entered_url
+
+    print(error_message)
+    return get_input_url()
 
 
 def get_max_num_workers() -> int:
-    """Returns the max number of workers to use in the thread pool."""
-    cmd_args = sys.argv
-    if len(cmd_args) > 2:
-        num_workers_str = sys.argv[2]
+    """Returns the max number of workers to use in the thread pool from the user."""
+    command_line_arguments: List[str] = sys.argv
+    if len(command_line_arguments) > 2:
+        num_workers_str = command_line_arguments[2]
     else:
         input_message = f"""Enter the number of workers.
         The number of workers must be a literal positive int.
@@ -131,6 +140,9 @@ def get_max_num_workers() -> int:
     while num_workers < 1:
         print(f"{num_workers} is not positive")
         num_workers_str = input("Please enter a positive integer: \n")
+        while not num_workers_str.isnumeric():
+            print(f"{num_workers_str} is not a literal int, please enter a literal int")
+            num_workers_str = input("Please enter a literal int: \n")
         num_workers = int(num_workers_str)
     return num_workers
 
