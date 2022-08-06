@@ -9,11 +9,11 @@ from urllib.request import urlopen
 from urllib.parse import urlparse
 from pathlib import PurePosixPath
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from os import cpu_count
+from os import cpu_count as number_of_cores
 import sys
 
 
-default_num_workers = min(32, cpu_count() + 5)
+default_num_workers = min(32, number_of_cores() + 5)
 
 
 def connected_to_internet(known_active_url = 'https://google.com'):
@@ -32,7 +32,7 @@ def url_is_active(url):
     except (HTTPError, URLError, ValueError):
         return False
 
-def url_is_file(url): 
+def url_is_file(url):
     """Returns true if url is a file and false otherwise."""
     if url.endswith(".html"):
         return False
@@ -116,22 +116,22 @@ def get_input_url(command_line_arguments, first_call = True):
     else:
         entered_url = input("Enter your URL: \n")
 
-    error_message = ""
+    errors = []
 
     if not url_is_web_page(entered_url):
-        error_message += """
+        errors += """
         The url must also be a working url to an active web page.
         The url must start with either http:// or https://,
         and not be have a file extension (except html).
         """
 
     if not url_is_active(entered_url):
-        error_message += f"The page in {entered_url} is not active or does not exist.\n"
+        errors += f"The page in {entered_url} is not active or does not exist.\n"
 
-    if error_message == "":
+    if errors == []:
         return entered_url
 
-    print(error_message)
+    print("\n".join(errors))
     return get_input_url(command_line_arguments, False)
 
 
@@ -166,7 +166,7 @@ def main():
 
     if not connected_to_internet():
         print("You are not connected to the internet, Internet is required to run this program.")
-        print("Please connect to the internet and try again.")
+        print("Please connect to the internet and try to run the program again.")
         return
     print("You are connected to the internet.")
 
