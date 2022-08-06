@@ -10,6 +10,8 @@ from link_back import url_is_web_page, link_back_gen
 class TestSolution(TestCase):
     """A unittest for solution.py"""
     valid_urls = (
+        "https://github.com/urllib3/urllib3",
+        "http://github.com/urllib3/urllib3",
         "https://en.wikipedia.org/wiki/Israel",
         "https://en.wikipedia.org/wiki/Red_Sea",
         "https://en.wikipedia.org/wiki/Egypt",
@@ -18,6 +20,7 @@ class TestSolution(TestCase):
 
     invalid_urls = (
         "https://docs.python.org/3/library/unittest.html#subtests",
+        "github.com/urllib3/urllib3",
         "http://en.wikipedia.org/wiki/Red_Sea/",
         "https://mail.google.com/mail",
         "https://ami.wikipedia.org/wiki/Faylo:Jerusalem-Mauerrundgang-64-Sportplatz-2010-gje.jpg",
@@ -33,7 +36,9 @@ class TestSolution(TestCase):
         ("https://en.wikipedia.org/wiki/Israel",
             "https://he.wikipedia.org/wiki/%D7%99%D7%A9%D7%A8%D7%90%D7%9C"),
         ("https://en.wikipedia.org/wiki/Israel",
-            "https://en.wikipedia.org/wiki/Theodor_Herzl")
+            "https://en.wikipedia.org/wiki/Theodor_Herzl"),
+        ("https://requests.readthedocs.io/en/latest/",
+            "https://github.com/requests/requests")
         )
 
     one_sided_pairs = (
@@ -52,7 +57,7 @@ class TestSolution(TestCase):
         for answer in link_back_gen(url_input):
             if answer == url_output:
                 return
-        message = f"{url_output} is not generated from {url_input}."
+        message = f"{url_output} is not generated from {url_input} but should be."
         self.fail(message)
 
 
