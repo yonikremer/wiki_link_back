@@ -27,7 +27,7 @@ def url_is_active(url):
     """Returns true if you can get the content of the url and false otherwise."""
     try:
         return urlopen(url).getcode() == 200
-    except (HTTPError, URLError):
+    except (HTTPError, URLError, ValueError):
         return False
 
 
@@ -46,9 +46,12 @@ def create_has_link_func(url_to):
     If that is the case, return the second url, otherwise return None."""
 
     def has_link_to_input_url(url_from):
-        if "File:" in url_from or url_from == url_to:
+        if url_from == url_to:
             return False
-        from_page_html_str = urlopen(url_from).read().decode("utf-8")
+        try:
+            from_page_html_str = urlopen(url_from).read().decode("utf-8")
+        except HTTPError:
+            return False
         internal_link = url_to[url_to.find("/wiki/"):]
         return internal_link in from_page_html_str
 
@@ -92,37 +95,34 @@ def wiki_link_back_gen(input_url, num_workers = default_num_workers):
                 yield curr_url
 
 
-def get_input_url():
+def get_input_url(command_line_arguments, first_call = True):
     """Returns the input url from the command line from the user."""
-    command_line_arguments = sys.argv
-    if len(command_line_arguments) > 1:
+    if first_call and len(command_line_arguments) > 1:
         entered_url = command_line_arguments[1]
     else:
         entered_url = input("Enter your URL: \n")
 
+    error_message = ""
+
     if not url_is_wiki_page(entered_url):
-        error_message = """
+        error_message += """
         The url must also be a working url to an active wikipedia page.
-        The Requirements are:
-        1. The url must start with either http:// or https://
-        2. The url must include with .wikipedia.org/wiki/
-        3. The url must be a valid url to an active wikipedia page.
+        The url must start with either http:// or https://
+        and include with .wikipedia.org/wiki/\n
         """
-        return get_input_url()
 
     if not url_is_active(entered_url):
-        error_message = f"The page in {entered_url} is not active or does not exist."
+        error_message += f"The page in {entered_url} is not active or does not exist.\n"
 
-    if url_is_wiki_page(entered_url) and url_is_active(entered_url):
+    if error_message == "":
         return entered_url
 
     print(error_message)
-    return get_input_url()
+    return get_input_url(command_line_arguments, False)
 
 
-def get_max_num_workers():
+def get_max_num_workers(command_line_arguments):
     """Returns the max number of workers to use in the thread pool from the user."""
-    command_line_arguments = sys.argv
     if len(command_line_arguments) > 2:
         num_workers_str = command_line_arguments[2]
     else:
@@ -148,15 +148,17 @@ def get_max_num_workers():
 
 def main():
     """The function called when running the file solution.py
-       read more in the readme file"""
+       read more in the README.md file"""
+
     if not connected_to_internet():
         print("You are not connected to the internet, Internet is required to run this program.")
         print("Please connect to the internet and try again.")
         return
     print("You are connected to the internet.")
 
-    input_url = get_input_url()
-    max_num_workers = get_max_num_workers()
+    command_line_arguments = sys.argv
+    input_url = get_input_url(command_line_arguments, True)
+    max_num_workers = get_max_num_workers(command_line_arguments)
 
     wikipedia_urls = wiki_link_back_gen(input_url, max_num_workers)
     print(f"Those are the pages that satisfy the rules at README.md for the input {input_url}: \n")

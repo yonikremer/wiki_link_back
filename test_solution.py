@@ -20,6 +20,7 @@ class TestSolution(TestCase):
         "https://docs.python.org/3/library/unittest.html#subtests",
         "http://en.wikipedia.org/wiki/Red_Sea/",
         "https://mail.google.com/mail",
+        "https://ami.wikipedia.org/wiki/Faylo:Jerusalem-Mauerrundgang-64-Sportplatz-2010-gje.jpg",
         "/wiki/Israel",
         "Random text", "", {"key": "value"}, [1, 2, 3], None, 42
         )
@@ -38,6 +39,11 @@ class TestSolution(TestCase):
     one_sided_pairs = (
         ("https://en.wikipedia.org/wiki/Israel", "https://en.wikipedia.org/wiki/Iron_Age"),
         ("https://en.wikipedia.org/wiki/Israel", "https://en.wikipedia.org/wiki/Middle_school")
+        )
+
+    file_paths = (
+        "https://en.wikipedia.org/wiki/File:Hatikvah_instrumental.ogg",
+        "https://en.wikipedia.org/wiki/File:Hatikvah_instrumental.ogg",
         )
 
 
