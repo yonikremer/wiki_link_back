@@ -6,6 +6,8 @@ Read more at the readme file"""
 from re import findall
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
+from urllib.parse import urlparse
+from pathlib import PurePosixPath
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from os import cpu_count
 import sys
@@ -30,14 +32,24 @@ def url_is_active(url):
     except (HTTPError, URLError, ValueError):
         return False
 
+def url_is_file(url): 
+    """Returns true if url is a file and false otherwise."""
+    if url.endswith(".html"):
+        return False
+    extensions = PurePosixPath(url).suffixes
+    return len(extensions) > 0
+
 
 def url_is_wiki_page(url):
     """Returns true if url is a url to an existing wikipedia page and false otherwise."""
     if not isinstance(url, str):
         return False
-    uses_http = url.startswith("https://") or url.startswith("http://")
-    in_wikipedia_org = ".wikipedia.org/wiki/" in url
-    return uses_http and in_wikipedia_org
+    parsed_url = urlparse(url)
+    uses_http = parsed_url.scheme in ("http", "https")
+    in_wikipedia_org = "wikipedia.org/wiki/" in url
+    is_file = url_is_file(url)
+    is_query = "?" in url 
+    return uses_http and in_wikipedia_org and (not is_file) and (not is_query)
 
 
 def create_has_link_func(url_to):
@@ -107,8 +119,9 @@ def get_input_url(command_line_arguments, first_call = True):
     if not url_is_wiki_page(entered_url):
         error_message += """
         The url must also be a working url to an active wikipedia page.
-        The url must start with either http:// or https://
-        and include with .wikipedia.org/wiki/\n
+        The url must start with either http:// or https://,
+        include with .wikipedia.org/wiki/
+        and not be have a file extension (except html).
         """
 
     if not url_is_active(entered_url):
