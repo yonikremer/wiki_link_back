@@ -40,62 +40,64 @@ def url_is_file(url):
     return len(extensions) > 0
 
 
-def url_is_wiki_page(url):
-    """Returns true if url is a url to an existing wikipedia page and false otherwise."""
+def url_is_web_page(url):
+    """Returns true if url is a url to an existing web page and false otherwise."""
     if not isinstance(url, str):
         return False
-    parsed_url = urlparse(url)
-    uses_http = parsed_url.scheme in ("http", "https")
-    in_wikipedia_org = "wikipedia.org/wiki/" in url
+    uses_http = url.startswith("http")
     is_file = url_is_file(url)
-    is_query = "?" in url 
-    return uses_http and in_wikipedia_org and (not is_file) and (not is_query)
+    return uses_http and (not is_file)
 
 
-def create_has_link_func(url_to):
+def create_has_link_func(url_to, decoding_method = "utf-8"):
     """Given a target url, returns a function that checks
     if a url has a link back to the target url.
     If that is the case, return the second url, otherwise return None."""
-
+    relative_url_from = urlparse(url_to).path
     def has_link_to_input_url(url_from):
-        if url_from == url_to:
+        are_the_same_page = (url_from in url_to) or (url_to in url_from)
+        if are_the_same_page:
             return False
         try:
-            from_page_html_str = urlopen(url_from).read().decode("utf-8")
+            from_page_html_str = urlopen(url_from).read().decode(decoding_method)
         except (HTTPError, URLError, ValueError):
             return False
-        internal_link = url_to[url_to.find("/wiki/"):]
-        return internal_link in from_page_html_str
+        return relative_url_from in from_page_html_str
 
     has_link_to_input_url.__name__ = f"has_link_to_{url_to}"
     return has_link_to_input_url
 
 
-def link_iter_to_url_gen(urls, sub_domain):
+def link_iter_to_url_gen(urls, scheme, network_location):
     """Modifies the internal links to valid urls and removes non valid urls
-    examples: https://en.wikipedia.org/wiki/Israel -> https://en.wikipedia.org/wiki/Israel
-    /wiki/Israel -> https://{sub_domain}.wikipedia.org/wiki/Israel"""
+    examples: https://en.wikipedia.org/wiki/Israel, any -> https://en.wikipedia.org/wiki/Israel
+    /wiki/Israel, en -> https://en.wikipedia.org/wiki/Israel"""
     already_generated = set([])
     for url in urls:
         if not url in already_generated:
             already_generated.add(url)
-            if url.startswith("/wiki/"):
-                url = f"https://{sub_domain}.wikipedia.org" + url
-            if url_is_wiki_page(url):
+            curr_url_parsed = urlparse(url)
+            curr_network_location = curr_url_parsed.netloc
+            curr_scheme = curr_url_parsed.scheme
+            if curr_network_location == "":
+                url = f"{network_location}" + url
+            if curr_scheme == "":
+                url = f"{scheme}://{url}"
+            if url_is_web_page(url):
                 yield url
 
 
-def wiki_link_back_gen(input_url, num_workers = default_num_workers):
-    """A generator function that gets a url to a wikipedia page
-     and returns all urls to other wikipedia pages that have a link back to the original page.
+def link_back_gen(input_url, num_workers = default_num_workers):
+    """A generator function that gets a url to a web page
+     and returns all urls to other web pages that have a link back to the original page.
     num_workers is the number of processes to use in the thread pool.
     """
     html_page = urlopen(input_url).read().decode("utf-8")
-    links = findall("href=[\"\'](.*?)[\"\']", html_page)
-    index_start_sub_domain = input_url.index("//") + 2
-    index_stop_sub_domain = input_url.index(".")
-    sub_domain = input_url[index_start_sub_domain : index_stop_sub_domain]
-    url_gen = link_iter_to_url_gen(links, sub_domain)
+    links = findall(pattern = "href=[\"\'](.*?)[\"\']", string = html_page)
+    parsed_url = urlparse(input_url)
+    scheme = parsed_url.scheme
+    network_location = parsed_url.netloc
+    url_gen = link_iter_to_url_gen(links, scheme, network_location)
     has_link_to_input = create_has_link_func(input_url)
 
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
@@ -116,11 +118,10 @@ def get_input_url(command_line_arguments, first_call = True):
 
     error_message = ""
 
-    if not url_is_wiki_page(entered_url):
+    if not url_is_web_page(entered_url):
         error_message += """
-        The url must also be a working url to an active wikipedia page.
+        The url must also be a working url to an active web page.
         The url must start with either http:// or https://,
-        include with .wikipedia.org/wiki/
         and not be have a file extension (except html).
         """
 
@@ -173,9 +174,9 @@ def main():
     input_url = get_input_url(command_line_arguments, True)
     max_num_workers = get_max_num_workers(command_line_arguments)
 
-    wikipedia_urls = wiki_link_back_gen(input_url, max_num_workers)
+    answer_generator = link_back_gen(input_url, max_num_workers)
     print(f"Those are the pages that satisfy the rules at README.md for the input {input_url}: \n")
-    for output_url in wikipedia_urls:
+    for output_url in answer_generator:
         print(output_url)
 
 

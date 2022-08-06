@@ -1,9 +1,9 @@
 # The challenge:
 
 ## My description:
-In this challenge, the program gets a url to a wikipedia page (let's call is input_page) 
+In this challenge, the program gets a url to a web page (let's call is input_page) 
 and prints every output_page that satisfies the following conditions:
-1. output_page is a valid url to an active wikipedia page.
+1. output_page is a valid url to an active web page (That you can currently enter).
 2. output_page has a link to input_page.
 3. input_page has a link to output_page.
 
@@ -46,38 +46,26 @@ Run the commands:
 ```$ python solution <{your url} {maximum number of workers}>```
 
 The requirements for the url:
-The url must also be a working url to an active wikipedia page
+The url must also be a working url to an active web page
 The Requirements are:
 A string
 Full path leading to active page
-Starting with https:// or http://
-Containing .wikipedia.org
+Starting with http
 
 If that doesn't work, try replacing 'python' with 'py', 'py3' and 'python3'.
 Or simply run solution.py using the code editor
 
-If the url you provided is not valid, you will the following messages: 
-The url must also be a working url to an active wikipedia page
-The Requirements are:
-A string
-Full path leading to active page
-Starting with https:// or http://
-Containing .wikipedia.org
-
-Than you will get the following message:
-Enter the number of workers,
-the recommended value for your computer is:
-
 If the url and number of workers are valid the program will print:
-Those are the pages that the page input_url has a url to and they have a link to input_url
+```Those are the pages that the page <input_url> has a url to and they have a link to <input_url>```
 And than prints every the output_url according to the rules in the first section.
 
 # Testing:
 You can my unit tests using the command:
-'$ python3 test_solution.py'
+```$ python test_solution.py```
+(You might need to switch python with py / py3 / python3)
 Notice that testing could be slow because it's running the program many times.
 
 # Other notes:
 I used the following standard libraries:
-unittest, random, typing, re (regular expressions), urllib, concurrent.futures, os
+unittest, random, typing, re (regular expressions), urllib, concurrent.futures, os, pathlib, sys
 I didn't use pytest because it is not a standard library.

@@ -5,7 +5,7 @@ from unittest import TestCase
 import unittest
 import random
 
-from solution import url_is_wiki_page, wiki_link_back_gen
+from solution import url_is_web_page, link_back_gen
 
 class TestSolution(TestCase):
     """A unittest for solution.py"""
@@ -49,7 +49,7 @@ class TestSolution(TestCase):
 
     def test_is_solution(self, url_input, url_output):
         """Asserts that url2 is generated from by calling wiki_link_back_gen(url1)"""
-        for answer in wiki_link_back_gen(url_input):
+        for answer in link_back_gen(url_input):
             if answer == url_output:
                 return
         message = f"{url_output} is not generated from {url_input}."
@@ -58,7 +58,7 @@ class TestSolution(TestCase):
 
     def test_is_not_solution(self, url_input, url_output):
         """Asserts that url2 is NOT generated from by calling wiki_link_back_gen(url1)"""
-        for answer in wiki_link_back_gen(url_input):
+        for answer in link_back_gen(url_input):
             message = f"{url_output} is generated from {url_input} when is should not."
             self.assertNotEqual(answer, url_output, message)
 
@@ -67,17 +67,17 @@ class TestSolution(TestCase):
         """Asserts that is_wiki_page returns true for valid urls"""
         for valid_url in self.valid_urls:
             with self.subTest(valid_url=valid_url):
-                self.assertTrue(url_is_wiki_page(valid_url))
+                self.assertTrue(url_is_web_page(valid_url))
 
         for invalid_url in self.invalid_urls:
             with self.subTest(invalid_url=invalid_url):
-                self.assertFalse(url_is_wiki_page(invalid_url))
+                self.assertFalse(url_is_web_page(invalid_url))
 
 
     def test_generating_strings(self):
         """Asserts that the wiki_link_back_gen is generating strings."""
         exm_valid_url = random.choice(self.valid_urls)
-        answer_generator = wiki_link_back_gen(exm_valid_url, num_workers=1)
+        answer_generator = link_back_gen(exm_valid_url, num_workers=1)
         first_ans = next(answer_generator)
         self.assertIsInstance(first_ans, str)
 
