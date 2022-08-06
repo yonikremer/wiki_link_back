@@ -5,7 +5,7 @@ from unittest import TestCase
 import unittest
 import random
 
-from solution import url_is_web_page, link_back_gen
+from link_back import url_is_web_page, link_back_gen
 
 class TestSolution(TestCase):
     """A unittest for solution.py"""
