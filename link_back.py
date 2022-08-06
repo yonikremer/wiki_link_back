@@ -87,17 +87,17 @@ def link_iter_to_url_gen(urls, scheme, network_location):
                 yield url
 
 
-def link_back_gen(input_url, num_workers = default_num_workers):
+def link_back_gen(input_url, num_workers = default_num_workers, decoding_method = "utf-8"):
     """A generator function that gets a url to a web page
      and returns all urls to other web pages that have a link back to the original page.
     num_workers is the number of processes to use in the thread pool.
     """
-    html_page = urlopen(input_url).read().decode("utf-8")
-    links = findall(pattern = "href=[\"\'](.*?)[\"\']", string = html_page)
-    parsed_url = urlparse(input_url)
-    scheme = parsed_url.scheme
-    network_location = parsed_url.netloc
-    url_gen = link_iter_to_url_gen(links, scheme, network_location)
+    input_page_html = urlopen(input_url).read().decode(decoding_method)
+    all_urls = findall(pattern = "href=[\"\'](.*?)[\"\']", string = input_page_html)
+    parsed_input_url = urlparse(input_url)
+    input_url_scheme = parsed_input_url.scheme
+    input_url_network_location = parsed_input_url.netloc
+    url_gen = link_iter_to_url_gen(all_urls, input_url_scheme, input_url_network_location)
     has_link_to_input = create_has_link_func(input_url)
 
     with ThreadPoolExecutor(max_workers=num_workers) as executor:

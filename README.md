@@ -43,7 +43,7 @@ Or using the green "code" button in the github page to download the repository a
 # Running instructions
 Run the commands:
 ```$ cd PATH_TO_REPOSITORY```
-```$ python solution <{your url} {maximum number of workers}>```
+```$ python link_back <{your url} {maximum number of workers}>```
 
 The requirements for the url:
 The url must also be a working url to an active web page
@@ -53,7 +53,7 @@ Full path leading to active page
 Starting with http
 
 If that doesn't work, try replacing 'python' with 'py', 'py3' and 'python3'.
-Or simply run solution.py using the code editor
+Or simply run link_back.py using the code editor
 
 If the url and number of workers are valid the program will print:
 ```Those are the pages that the page <input_url> has a url to and they have a link to <input_url>```
@@ -61,7 +61,7 @@ And than prints every the output_url according to the rules in the first section
 
 # Testing:
 You can my unit tests using the command:
-```$ python test_solution.py```
+```$ python test_link_back.py```
 (You might need to switch python with py / py3 / python3)
 Notice that testing could be slow because it's running the program many times.
 
