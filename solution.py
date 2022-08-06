@@ -62,7 +62,7 @@ def create_has_link_func(url_to):
             return False
         try:
             from_page_html_str = urlopen(url_from).read().decode("utf-8")
-        except HTTPError:
+        except (HTTPError, URLError, ValueError):
             return False
         internal_link = url_to[url_to.find("/wiki/"):]
         return internal_link in from_page_html_str
