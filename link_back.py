@@ -4,6 +4,7 @@ Read more at the readme file"""
 
 
 from re import findall
+from socket import timeout as SocketTimeoutError
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 from urllib.parse import urlparse
@@ -32,6 +33,7 @@ def url_is_active(url):
     except (HTTPError, URLError, ValueError):
         return False
 
+
 def url_is_file(url):
     """Returns true if url is a file and false otherwise."""
     if url.endswith(".html"):
@@ -49,7 +51,7 @@ def url_is_web_page(url):
     return uses_http and (not is_file)
 
 
-def create_has_link_func(url_to, decoding_method = "utf-8"):
+def create_has_link_func(url_to, decoding_method = "utf-8", timeout = 600):
     """Given a target url, returns a function that checks
     if a url has a link back to the target url.
     If that is the case, return the second url, otherwise return None."""
@@ -59,9 +61,12 @@ def create_has_link_func(url_to, decoding_method = "utf-8"):
         if are_the_same_page:
             return False
         try:
-            from_page_html_str = urlopen(url_from).read().decode(decoding_method)
+            from_page_html_str = urlopen(url_from, timeout=timeout).read().decode(decoding_method)
         except (HTTPError, URLError, ValueError):
             return False
+        except (TimeoutError, SocketTimeoutError) as original_exception:
+            print(f"{url_from} caused a timeout error.")
+            raise ValueError(f"Timeout of {timeout} seconds is not enough.") from original_exception
         return relative_url_from in from_page_html_str
 
     has_link_to_input_url.__name__ = f"has_link_to_{url_to}"
