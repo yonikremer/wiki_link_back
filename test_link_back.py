@@ -46,14 +46,14 @@ class TestSolution(TestCase):
         ("https://en.wikipedia.org/wiki/Israel", "https://en.wikipedia.org/wiki/Middle_school")
         )
 
-    file_paths = (
+    file_urls = (
         "https://en.wikipedia.org/wiki/File:Hatikvah_instrumental.ogg",
         "https://en.wikipedia.org/wiki/File:Hatikvah_instrumental.ogg",
         )
 
 
     def test_is_solution(self, url_input, url_output):
-        """Asserts that url2 is generated from by calling wiki_link_back_gen(url1)"""
+        """Asserts that url2 is generated from by calling link_back_gen(url1)"""
         for answer in link_back_gen(url_input):
             if answer == url_output:
                 return
@@ -62,14 +62,14 @@ class TestSolution(TestCase):
 
 
     def test_is_not_solution(self, url_input, url_output):
-        """Asserts that url2 is NOT generated from by calling wiki_link_back_gen(url1)"""
+        """Asserts that url2 is NOT generated from by calling link_back_gen(url1)"""
         for answer in link_back_gen(url_input):
             message = f"{url_output} is generated from {url_input} when is should not."
             self.assertNotEqual(answer, url_output, message)
 
 
-    def test_is_wiki_page(self):
-        """Asserts that is_wiki_page returns true for valid urls"""
+    def test_is_web_page(self):
+        """Asserts that is_page returns true for valid urls"""
         for valid_url in self.valid_urls:
             with self.subTest(valid_url=valid_url):
                 self.assertTrue(url_is_web_page(valid_url))
@@ -78,21 +78,23 @@ class TestSolution(TestCase):
             with self.subTest(invalid_url=invalid_url):
                 self.assertFalse(url_is_web_page(invalid_url))
 
+        for file_url in self.
+
 
     def test_generating_strings(self):
-        """Asserts that the wiki_link_back_gen is generating strings."""
+        """Asserts that the link_back_gen is generating strings."""
         exm_valid_url = random.choice(self.valid_urls)
         answer_generator = link_back_gen(exm_valid_url, num_workers=1)
         first_ans = next(answer_generator)
         self.assertIsInstance(first_ans, str)
 
 
-    def test_known_url_pairs(self):
-        """Asserts that the known urls are generated from by calling wiki_link_back_gen(url1)"""
-        for url1, url2 in self.known_url_pairs:
-            with self.subTest(url1=url1, url2=url2):
-                self.test_is_solution(url1, url2)
-                self.test_is_solution(url2, url1)
+    # def test_known_url_pairs(self):
+    #     """Asserts that the known urls are generated from by calling link_back_gen(url1)"""
+    #     for url1, url2 in self.known_url_pairs:
+    #         with self.subTest(url1=url1, url2=url2):
+    #             self.test_is_solution(url1, url2)
+    #             self.test_is_solution(url2, url1)
 
 
     def test_one_sided(self):
