@@ -49,7 +49,7 @@ def url_is_web_page(url):
     return uses_http and (not is_file)
 
 
-def create_has_link_func(url_to, decoding_method="utf-8", timeout=600):
+def create_have_link_func(url_to, decoding_method="utf-8", timeout=600):
     """Given a target url, returns a function that checks
     if an url has a link back to the target url.
     If that is the case, return True, otherwise return False."""
@@ -71,38 +71,37 @@ def create_has_link_func(url_to, decoding_method="utf-8", timeout=600):
     return have_link_to_input_url
 
 
-def link_iter_to_url_gen(urls, base_scheme, base_network_location):
-    """Modifies the internal links to valid urls and removes non-valid URLs
+def relative_to_absolute_urls(relative_urls, base_scheme, base_network_location):
+    """Modifies relative to absolute urls and removes non-valid URLs
     examples: https://en.wikipedia.org/wiki/Israel, any -> https://en.wikipedia.org/wiki/Israel
     /wiki/Israel, en -> https://en.wikipedia.org/wiki/Israel"""
-    already_checked = set([])
-    for url in urls:
-        if url not in already_checked:
-            already_checked.add(url)
-            curr_url_parsed = urlparse(url)
-            curr_network_location = curr_url_parsed.netloc
-            curr_scheme = curr_url_parsed.scheme
-            if curr_network_location == "":
-                url = base_network_location + url
-            if curr_scheme == "":
-                url = f"{base_scheme}://{url}"
-            if url_is_web_page(url):
-                yield url
+    absolute_urls = set([])
+    for url in set(relative_urls):
+        curr_url_parsed = urlparse(url)
+        curr_network_location = curr_url_parsed.netloc
+        curr_scheme = curr_url_parsed.scheme
+        if curr_network_location == "":
+            url = base_network_location + url
+        if curr_scheme == "":
+            url = f"{base_scheme}://{url}"
+        if url_is_web_page(url):
+            absolute_urls.add(url)
+    return absolute_urls
 
 
 def link_back_gen(input_url, num_workers=default_num_workers, decoding_method="utf-8"):
     """generates all the urls that satisfy the rules of the challenge as described in the README.md file
     """
     input_page_html = urlopen(input_url).read().decode(decoding_method)
-    all_urls = findall(pattern="href=[\"\'](.*?)[\"\']", string=input_page_html)
+    relative_urls = findall(pattern="href=[\"\'](.*?)[\"\']", string=input_page_html)
     parsed_input_url = urlparse(input_url)
     input_url_scheme = parsed_input_url.scheme
     input_url_network_location = parsed_input_url.netloc
-    url_gen = link_iter_to_url_gen(all_urls, input_url_scheme, input_url_network_location)
-    has_link_to_input = create_has_link_func(input_url)
+    absolute_urls = relative_to_absolute_urls(relative_urls, input_url_scheme, input_url_network_location)
+    have_link_to_input = create_have_link_func(input_url)
 
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
-        future_to_url = {executor.submit(has_link_to_input, url): url for url in url_gen}
+        future_to_url = {executor.submit(have_link_to_input, url): url for url in absolute_urls}
         for future in as_completed(future_to_url):
             curr_url = future_to_url[future]
             is_linked = future.result()
