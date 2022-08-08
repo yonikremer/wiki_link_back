@@ -2,9 +2,8 @@
 run this file to use the program.
 Read more at the readme file"""
 
-
 from re import findall
-from socket import timeout as SocketTimeoutError
+from socket import timeout as socket_timeout_error
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 from urllib.parse import urlparse
@@ -13,11 +12,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from os import cpu_count as number_of_cores
 import sys
 
+default_num_workers = min(32, number_of_cores() + 4)
 
-default_num_workers = min(32, number_of_cores() + 5)
 
-
-def connected_to_internet(known_active_url = 'https://google.com'):
+def connected_to_internet(known_active_url='https://google.com'):
     """Returns true if you are connected to internet and false otherwise."""
     try:
         urlopen(known_active_url)
@@ -35,7 +33,7 @@ def url_is_active(url):
 
 
 def url_is_file(url):
-    """Returns true if url is a file and false otherwise."""
+    """Returns true if url is a file (except for HTML) and false otherwise."""
     if url.endswith(".html"):
         return False
     extensions = PurePosixPath(url).suffixes
@@ -43,7 +41,7 @@ def url_is_file(url):
 
 
 def url_is_web_page(url):
-    """Returns true if url is a url to an existing web page and false otherwise."""
+    """Returns true if url is an url to an existing web page and false otherwise."""
     if not isinstance(url, str):
         return False
     uses_http = url.startswith("http")
@@ -51,12 +49,13 @@ def url_is_web_page(url):
     return uses_http and (not is_file)
 
 
-def create_has_link_func(url_to, decoding_method = "utf-8", timeout = 600):
+def create_has_link_func(url_to, decoding_method="utf-8", timeout=600):
     """Given a target url, returns a function that checks
-    if a url has a link back to the target url.
-    If that is the case, return the second url, otherwise return None."""
+    if an url has a link back to the target url.
+    If that is the case, return True, otherwise return False."""
     relative_url_from = urlparse(url_to).path
-    def has_link_to_input_url(url_from):
+
+    def have_link_to_input_url(url_from):
         are_the_same_page = (url_from in url_to) or (url_to in url_from)
         if are_the_same_page:
             return False
@@ -64,41 +63,38 @@ def create_has_link_func(url_to, decoding_method = "utf-8", timeout = 600):
             from_page_html_str = urlopen(url_from, timeout=timeout).read().decode(decoding_method)
         except (HTTPError, URLError, ValueError):
             return False
-        except (TimeoutError, SocketTimeoutError) as original_exception:
+        except (TimeoutError, socket_timeout_error) as original_exception:
             print(f"{url_from} caused a timeout error.")
             raise ValueError(f"Timeout of {timeout} seconds is not enough.") from original_exception
         return relative_url_from in from_page_html_str
 
-    has_link_to_input_url.__name__ = f"has_link_to_{url_to}"
-    return has_link_to_input_url
+    return have_link_to_input_url
 
 
-def link_iter_to_url_gen(urls, scheme, network_location):
-    """Modifies the internal links to valid urls and removes non valid urls
+def link_iter_to_url_gen(urls, base_scheme, base_network_location):
+    """Modifies the internal links to valid urls and removes non-valid URLs
     examples: https://en.wikipedia.org/wiki/Israel, any -> https://en.wikipedia.org/wiki/Israel
     /wiki/Israel, en -> https://en.wikipedia.org/wiki/Israel"""
-    already_generated = set([])
+    already_checked = set([])
     for url in urls:
-        if not url in already_generated:
-            already_generated.add(url)
+        if url not in already_checked:
+            already_checked.add(url)
             curr_url_parsed = urlparse(url)
             curr_network_location = curr_url_parsed.netloc
             curr_scheme = curr_url_parsed.scheme
             if curr_network_location == "":
-                url = f"{network_location}" + url
+                url = base_network_location + url
             if curr_scheme == "":
-                url = f"{scheme}://{url}"
+                url = f"{base_scheme}://{url}"
             if url_is_web_page(url):
                 yield url
 
 
-def link_back_gen(input_url, num_workers = default_num_workers, decoding_method = "utf-8"):
-    """A generator function that gets a url to a web page
-     and returns all urls to other web pages that have a link back to the original page.
-    num_workers is the number of processes to use in the thread pool.
+def link_back_gen(input_url, num_workers=default_num_workers, decoding_method="utf-8"):
+    """generates all the urls that satisfy the rules of the challenge as described in the README.md file
     """
     input_page_html = urlopen(input_url).read().decode(decoding_method)
-    all_urls = findall(pattern = "href=[\"\'](.*?)[\"\']", string = input_page_html)
+    all_urls = findall(pattern="href=[\"\'](.*?)[\"\']", string=input_page_html)
     parsed_input_url = urlparse(input_url)
     input_url_scheme = parsed_input_url.scheme
     input_url_network_location = parsed_input_url.netloc
@@ -114,7 +110,7 @@ def link_back_gen(input_url, num_workers = default_num_workers, decoding_method 
                 yield curr_url
 
 
-def get_input_url(command_line_arguments, first_call = True):
+def get_input_url(command_line_arguments, first_call=True):
     """Returns the input url from the command line from the user."""
     if first_call and len(command_line_arguments) > 1:
         entered_url = command_line_arguments[1]
@@ -133,7 +129,7 @@ def get_input_url(command_line_arguments, first_call = True):
     if not url_is_active(entered_url):
         errors += f"The page in {entered_url} is not active or does not exist.\n"
 
-    if errors == []:
+    if not errors:
         return entered_url
 
     print("\n".join(errors))
@@ -173,12 +169,10 @@ def main():
         print("You are not connected to the internet, Internet is required to run this program.")
         print("Please connect to the internet and try to run the program again.")
         return
-    print("You are connected to the internet.")
 
     command_line_arguments = sys.argv
     input_url = get_input_url(command_line_arguments, True)
     max_num_workers = get_max_num_workers(command_line_arguments)
-
     answer_generator = link_back_gen(input_url, max_num_workers)
     print(f"Those are the pages that satisfy the rules at README.md for the input {input_url}: \n")
     for output_url in answer_generator:
