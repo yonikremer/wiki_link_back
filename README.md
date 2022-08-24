@@ -1,11 +1,19 @@
+# Important Note:
+A expended the program to work with every 2 web pages, not just wikipedia articales.
+
 # The challenge:
 
 ## My description:
-In this challenge, the program gets a url to a web page (let's call is input_page) 
-and prints every output_page that satisfies the following conditions:
+
+In this challenge, the program gets a url to a web page (let's call it input_page) 
+and prints every page (let's call it output_page) that satisfies the following conditions:
 1. output_page is a valid url to an active web page (That you can currently enter).
 2. output_page has a link to input_page.
 3. input_page has a link to output_page.
+4. output_page is a wikipedia articale.
+
+In the original challenge (before my expantion):
+Check that input_page is a valid url to a wikipedia articale
 
 ## As sent to me:
 In this exercise you will write a computer program that receives a URL to a Wikipedia article on the command line. The program will print a list of URLs to other Wikipedia articles:
@@ -31,7 +39,7 @@ You should not use comments in your code - try to make the code readable without
 bonus: parallelize your program so that it completes faster.
 
 # Requirements: 
-python 3.10+ and Internet connection.
+python 3 (The program was tested on 3.10) and Internet connection.
 
 The program should run in older versions of Python, but it wasn't tested.
 
